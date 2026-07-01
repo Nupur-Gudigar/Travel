@@ -449,7 +449,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, .section-head:focus-
     <br><br>
     (Take it from your shy, introverted sister who ignored taking pictures when she was young, thinking they were cringe or that I looked bad. I miss those moments and have nothing to remember them by.)
     <br><br>
-    Love you. Miss you. Send me lots of picture. 💗
+    Love you. Miss you. Send me lots of picture. &#128147;
     <span class="heart">&#9825;</span>
   </div>
 
@@ -491,9 +491,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, .section-head:focus-
    That's it -- from then on, this exact file (with your ID baked
    in) is the one shared source of truth for both of you.
    ========================================================== */
-const BLOB_ID = 'PASTE_YOUR_BLOB_ID_HERE';
+const BLOB_ID = '019f1ba9-e371-7b79-a2f6-b40b36276d9e';
 const BLOB_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
-const SETUP_NEEDED = BLOB_ID === 'PASTE_YOUR_BLOB_ID_HERE';
+const SETUP_NEEDED = BLOB_ID === '019f1ba9-e371-7b79-a2f6-b40b36276d9e';
 
 /* ---------------- Data ---------------- */
 const ICONS = {
@@ -673,7 +673,7 @@ async function saveState(){
 
 function showSetupBanner(){
   const el = document.getElementById('syncStatus');
-  if(el) el.textContent = '';
+  if(el) el.textContent = 'Setup needed -- see the ONE-TIME SETUP instructions at the top of the script tag';
   const btn = document.getElementById('refreshBtn');
   if(btn) btn.style.display = 'none';
 }
@@ -682,12 +682,12 @@ function updateSyncLabel(){
   const el = document.getElementById('syncStatus');
   if(!el || SETUP_NEEDED) return;
   if(!syncOk){ el.textContent = "Couldn't sync -- check your connection, will retry"; return; }
-  if(!lastSyncedAt){ el.textContent = 'Shared with your brother \u00b7 syncing\u2026'; return; }
+  if(!lastSyncedAt){ el.textContent = 'Shared with your sister \u00b7 syncing\u2026'; return; }
   const secs = Math.round((new Date() - lastSyncedAt)/1000);
   let when = 'just now';
   if(secs >= 60) when = Math.round(secs/60) + ' min ago';
   else if(secs >= 5) when = secs + 's ago';
-  el.textContent = `Shared with your brother \u00b7 synced ${when}`;
+  el.textContent = `Shared with your sister \u00b7 synced ${when}`;
 }
 setInterval(updateSyncLabel, 5000);
 
