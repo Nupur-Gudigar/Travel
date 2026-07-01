@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seoul Departure Sheet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;600&display=swap');
+
+:root{
+  /* Page theme: near-black, warm off-white ink, brass + coral accents.
+     The hero panel gets a subtle navy tint (see --night-bg below) so it
+     still reads as a distinct "night view" inset rather than blending
+     flat into the page. */
+  --bg: #0B0B0D;
+  --card-bg: rgba(255,255,255,0.035);
+  --card-hover: rgba(255,255,255,0.06);
+  --ink: #EDEAE0;
+  --ink-soft: rgba(237,234,224,0.62);
+  --ink-faint: rgba(237,234,224,0.32);
+  --line: #7FB3D5;
+  --line-dim: rgba(255,255,255,0.09);
+  --paper: #EDEAE0;
+  --brass: #D89B4A;
+  --brass-bright: #F0B95F;
+  --coral: #D9917C;
+  --ok: #7CC49A;
+  --radius: 3px;
+
+  /* Night theme: used only inside .hero, scoped via CSS variable override below */
+  --night-bg: #0B2545;
+  --night-line: #7FB3D5;
+  --night-paper: #EEEAE0;
+  --ink-deep: #061831;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    linear-gradient(var(--line-dim) 1px, transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg, var(--line-dim) 1px, transparent 1px) 0 0/40px 40px,
+    var(--bg);
+  color:var(--ink);
+  font-family:'Work Sans', sans-serif;
+  min-height:100vh;
+  padding: 28px 16px 80px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001s !important; transition-duration:0.001s !important;}
+}
+
+.sheet{
+  max-width:920px;
+  margin:0 auto;
+}
+
+/* ---------- Title block ---------- */
+.titleblock{
+  border:1.5px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap:12px 24px;
+  background:rgba(255,255,255,0.03);
+  margin-bottom:22px;
+}
+.titleblock h1{
+  font-family:'Big Shoulders Display', sans-serif;
+  font-weight:800;
+  font-size:clamp(28px, 5vw, 44px);
+  letter-spacing:0.5px;
+  margin:0 0 4px;
+  line-height:1;
+  color:var(--paper);
+}
+.titleblock .sub{
+  font-family:'JetBrains Mono', monospace;
+  font-size:12px;
+  color:var(--line);
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+}
+.meta-grid{
+  display:grid;
+  grid-template-columns:repeat(2,auto);
+  gap:2px 18px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  align-content:start;
+  border-left:1px solid var(--line-dim);
+  padding-left:18px;
+}
+.meta-grid span.label{color:var(--line); text-transform:uppercase; letter-spacing:0.5px;}
+.meta-grid span.val{color:var(--paper);}
+@media (max-width:640px){
+  .titleblock{grid-template-columns:1fr;}
+  .meta-grid{border-left:none; padding-left:0; border-top:1px solid var(--line-dim); padding-top:10px;}
+}
+
+/* ---------- Personalization strip ---------- */
+.personalize{
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--line);
+  margin-bottom:22px;
+}
+.personalize input{
+  background:transparent;
+  border:none;
+  border-bottom:1px dashed var(--line);
+  color:var(--brass-bright);
+  font-family:'Caveat', cursive;
+  font-size:19px;
+  padding:2px 6px;
+  outline:none;
+  min-width:140px;
+}
+.personalize input::placeholder{color:rgba(237,234,224,0.4); font-family:'JetBrains Mono',monospace; font-size:11px;}
+.personalize .saved-tick{color:var(--ok); opacity:0; transition:opacity .3s;}
+.personalize .saved-tick.show{opacity:1;}
+
+/* ---------- Hero: skyline + progress ----------
+   Scoped "night" theme: overriding the shared variable names locally
+   means every descendant inside .hero automatically reads the bright
+   values below, while the rest of the page keeps the light paper theme. */
+.hero{
+  --line: var(--night-line);
+  --line-dim: rgba(127,179,213,0.22);
+  --paper: var(--night-paper);
+  --brass: #D89B4A;
+  --brass-bright: #F0B95F;
+  border:1.5px solid var(--night-line);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-bottom:22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), transparent),
+    var(--night-bg);
+  position:relative;
+  overflow:hidden;
+}
+.hero-top{
+  display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.hero-top .progress-num{
+  font-family:'Big Shoulders Display', sans-serif;
+  font-weight:800;
+  font-size:56px;
+  line-height:0.85;
+  color:var(--brass-bright);
+}
+.hero-top .progress-num sup{font-size:22px; color:var(--line);}
+.hero-top .progress-label{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px; color:var(--line); text-transform:uppercase; letter-spacing:0.5px;
+}
+.countdown{
+  text-align:right;
+  font-family:'JetBrains Mono', monospace;
+}
+.countdown .days{
+  font-family:'Big Shoulders Display', sans-serif;
+  font-weight:800;
+  font-size:34px;
+  color:var(--paper);
+  line-height:1;
+}
+.countdown .cd-label{font-size:11px; color:var(--line); text-transform:uppercase;}
+
+.progress-track{
+  height:8px; width:100%;
+  background:rgba(127,179,213,0.18);
+  border-radius:4px;
+  overflow:hidden;
+  margin-bottom:14px;
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg, var(--brass), var(--brass-bright));
+  width:0%;
+  transition:width .6s ease;
+}
+
+.sync-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  margin-bottom:16px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  color:var(--line);
+}
+#refreshBtn{
+  background:none;
+  border:1px solid var(--line-dim);
+  color:var(--line);
+  font-family:'JetBrains Mono', monospace;
+  font-size:10.5px;
+  padding:4px 10px;
+  border-radius:3px;
+  cursor:pointer;
+  letter-spacing:0.3px;
+}
+#refreshBtn:hover{border-color:var(--line); color:var(--paper);}
+#refreshBtn.spinning{opacity:0.5; pointer-events:none;}
+
+svg.skyline{width:100%; height:auto; display:block;}
+.skyline rect.window{ transition: fill .4s ease, opacity .4s ease; }
+
+/* ---------- Section sheet ---------- */
+.section{
+  border:1.5px solid var(--line);
+  border-radius:var(--radius);
+  margin-bottom:18px;
+  background:var(--card-bg);
+  overflow:hidden;
+}
+.section-head{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding:14px 18px;
+  cursor:pointer;
+  user-select:none;
+}
+.section-head:hover{background:var(--card-hover);}
+.section-head-left{display:flex; align-items:center; gap:12px;}
+.sheet-num{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px; color:var(--bg);
+  background:var(--line);
+  padding:3px 7px;
+  border-radius:2px;
+  letter-spacing:0.5px;
+}
+.section-icon{width:22px; height:22px; flex-shrink:0; color:var(--line);}
+.section-title{
+  font-family:'Big Shoulders Display', sans-serif;
+  font-weight:700;
+  font-size:19px;
+  letter-spacing:0.3px;
+  color:var(--paper);
+}
+.section-progress{
+  font-family:'JetBrains Mono', monospace;
+  font-size:12px; color:var(--brass-bright);
+  white-space:nowrap;
+}
+.chevron{
+  width:14px; height:14px; border-right:2px solid var(--line); border-bottom:2px solid var(--line);
+  transform:rotate(45deg); transition:transform .25s ease; flex-shrink:0;
+}
+.section.open .chevron{transform:rotate(-135deg);}
+
+.section-body{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .35s ease;
+  border-top:1px solid transparent;
+}
+.section.open .section-body{border-top:1px solid var(--line-dim);}
+
+.section-inner{padding:6px 18px 18px;}
+.subhead{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px; color:var(--brass-bright); text-transform:uppercase; letter-spacing:0.6px;
+  margin:16px 0 6px;
+}
+.subhead:first-child{margin-top:14px;}
+
+.item{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:7px 4px;
+  border-bottom:1px solid var(--line-dim);
+}
+.item:last-child{border-bottom:none;}
+.item input[type=checkbox]{
+  appearance:none; -webkit-appearance:none;
+  width:18px; height:18px; flex-shrink:0; margin-top:1px;
+  border:1.5px solid var(--line);
+  border-radius:3px;
+  cursor:pointer;
+  position:relative;
+  background:transparent;
+}
+.item input[type=checkbox]:checked{
+  background:var(--brass);
+  border-color:var(--brass);
+}
+.item input[type=checkbox]:checked::after{
+  content:'';
+  position:absolute; left:5px; top:1px;
+  width:5px; height:9px;
+  border:solid var(--ink-deep);
+  border-width:0 2px 2px 0;
+  transform:rotate(45deg);
+}
+.item label{
+  font-size:14.5px; line-height:1.45; color:var(--paper); cursor:pointer;
+}
+.item.checked label{color:var(--ink-faint); text-decoration:line-through; text-decoration-color:var(--ink-faint);}
+.item .hint{display:block; font-size:12.5px; color:var(--line); margin-top:2px; font-style:italic;}
+
+/* ---------- Tip callouts ---------- */
+.tip{
+  display:flex; gap:10px; align-items:flex-start;
+  margin:14px 2px;
+  padding:11px 13px;
+  border:1px dashed var(--line);
+  border-radius:var(--radius);
+  background:var(--card-bg);
+}
+.tip .tip-mark{
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px; color:var(--bg);
+  background:var(--line);
+  padding:2px 6px;
+  border-radius:2px;
+  flex-shrink:0;
+  margin-top:1px;
+  letter-spacing:0.5px;
+}
+.tip p{margin:0; font-size:13.5px; line-height:1.5; color:var(--paper);}
+
+/* ---------- Encouragement notes ---------- */
+.note{
+  background:var(--coral);
+  color:#3D1F1A;
+  font-family:'Caveat', cursive;
+  font-size:20px;
+  line-height:1.35;
+  padding:14px 18px;
+  border-radius:2px;
+  margin:18px 4px;
+  position:relative;
+  transform:rotate(-1.1deg);
+  box-shadow:0 6px 14px rgba(0,0,0,0.25);
+}
+.section-inner .note:nth-of-type(even){transform:rotate(1deg);}
+.note .sign{
+  display:block;
+  text-align:right;
+  font-size:15px;
+  margin-top:4px;
+  opacity:0.75;
+}
+.note.final-note{
+  max-width:560px;
+  margin:26px auto 30px;
+  font-size:22px;
+  line-height:1.4;
+  padding:22px 26px;
+  transform:rotate(-0.6deg);
+}
+.note.final-note .heart{
+  display:block;
+  text-align:center;
+  font-size:16px;
+  margin-top:10px;
+  opacity:0.8;
+  font-family:'JetBrains Mono', monospace;
+  letter-spacing:0.5px;
+}
+
+/* ---------- Footer ---------- */
+.footer{
+  text-align:center;
+  margin-top:34px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:11.5px;
+  color:var(--line);
+  letter-spacing:0.3px;
+}
+.footer .foot-note{
+  font-family:'Caveat', cursive;
+  font-size:22px;
+  color:var(--brass-bright);
+  margin-bottom:10px;
+  letter-spacing:0;
+}
+.reset-btn{
+  margin-top:16px;
+  background:none;
+  border:1px solid var(--line-dim);
+  color:var(--line);
+  font-family:'JetBrains Mono', monospace;
+  font-size:10.5px;
+  padding:6px 12px;
+  border-radius:3px;
+  cursor:pointer;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+}
+.reset-btn:hover{border-color:var(--line); color:var(--paper);}
+
+/* focus visibility */
+a:focus-visible, button:focus-visible, input:focus-visible, .section-head:focus-visible{
+  outline:2px solid var(--brass-bright); outline-offset:2px;
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="titleblock">
+    <div>
+      <div class="sub">Project No. SEL-2026 &nbsp;&middot;&nbsp; Departure Preparation Set</div>
+      <h1>SEOUL ARCHITECTURE TOUR</h1>
+      <div class="sub">6 Nights / 7 Days &nbsp;&middot;&nbsp; Bangalore &rarr; Seoul</div>
+    </div>
+    <div class="meta-grid">
+      <span class="label">Depart</span><span class="val">15 Jul 2026</span>
+      <span class="label">Scale</span><span class="val">one step : one day</span>
+      <span class="label">Drawn for</span><span class="val" id="metaName">Pratyusha Gudigar</span>
+      <span class="label">Drawn by</span><span class="val">your sister, from the US</span>
+    </div>
+  </div>
+
+  <div class="personalize">
+    <span>THIS SHEET BELONGS TO:</span>
+    <input type="text" id="nameInput" placeholder="type your name here" maxlength="30">
+    <span class="saved-tick" id="savedTick">saved &#10003;</span>
+  </div>
+
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="progress-num" id="progressNum">0<sup>%</sup></div>
+        <div class="progress-label">Prep complete</div>
+      </div>
+      <div class="countdown">
+        <div class="days" id="daysLeft">&mdash;</div>
+        <div class="cd-label">days to departure</div>
+      </div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="sync-row">
+      <span id="syncStatus">Shared with your brother &middot; syncing&hellip;</span>
+      <button id="refreshBtn" type="button">Refresh now</button>
+    </div>
+    <svg class="skyline" id="skyline" viewBox="0 0 880 160" preserveAspectRatio="xMidYMax meet"></svg>
+  </div>
+
+  <div id="sections"></div>
+
+  <div class="note final-note">
+    Don't forget to take a lot of pictures, videos, make vlogs, make memories. Don't worry about how you're looking or what you're wearing &mdash; don't forget to capture memories.
+    <br><br>
+    (Take it from your shy, introverted sister who ignored taking pictures when she was young, thinking they were cringe or that I looked bad. I miss those moments and have nothing to remember them by.)
+    <br><br>
+    Love you. Miss you. Send me lots of picture. 💗
+    <span class="heart">&#9825;</span>
+  </div>
+
+  <div class="footer">
+    <div class="foot-note">You've got this. Go make Seoul yours.</div>
+    <div>Progress is shared between this device and your sister's &mdash; check items off as you go.</div>
+    <button class="reset-btn" id="resetBtn">Reset all progress</button>
+  </div>
+
+</div>
+
+<script>
+/* ==========================================================
+   ONE-TIME SETUP -- read this before publishing to GitHub Pages
+   ==========================================================
+   This page uses jsonblob.com, a free, no-signup JSON storage
+   service, so that you and your sister -- both opening the same
+   published URL -- see the SAME shared checklist progress.
+
+   Do this once, before your first `git push`:
+
+   1. Open a terminal and run:
+
+        curl -i -X POST -H "Content-Type: application/json" \
+          -d '{"checklist":{},"name":""}' \
+          https://jsonblob.com/api/jsonBlob
+
+   2. In the response, find a line that looks like:
+
+        Location: https://jsonblob.com/api/jsonBlob/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+   3. Copy ONLY the id part after the last slash
+      (e.g. a1b2c3d4-e5f6-7890-abcd-ef1234567890)
+
+   4. Paste it into BLOB_ID below, replacing the placeholder text.
+
+   5. Save, commit, push. Publish via GitHub Pages as planned.
+
+   That's it -- from then on, this exact file (with your ID baked
+   in) is the one shared source of truth for both of you.
+   ========================================================== */
+const BLOB_ID = 'PASTE_YOUR_BLOB_ID_HERE';
+const BLOB_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
+const SETUP_NEEDED = BLOB_ID === 'PASTE_YOUR_BLOB_ID_HERE';
+
+/* ---------------- Data ---------------- */
+const ICONS = {
+  doc: '<path d="M5 2h9l5 5v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14 2v5h5" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+  coin: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v10M9 9.5c0-1.4 1.3-2.2 3-2.2s3 .9 3 2c0 3-6 1.6-6 4.6 0 1.2 1.3 2.1 3 2.1s3-.8 3-2.1" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+  phone: '<rect x="7" y="2" width="10" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="10" y1="18.5" x2="14" y2="18.5" stroke="currentColor" stroke-width="1.6"/>',
+  umbrella: '<path d="M12 3c5 0 9 3.8 9 8.5H3C3 6.8 7 3 12 3z" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="12" y1="11.5" x2="12" y2="19" stroke="currentColor" stroke-width="1.6"/><path d="M12 19a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+  speech: '<path d="M4 5h16v11H9l-4 4V5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+  handshake: '<path d="M3 11l4-3 4 3 3-2 4 3-3 4-4-3-3 2-5-4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>',
+  moon: '<path d="M20 13.5A8.5 8.5 0 1 1 10.5 4 6.8 6.8 0 0 0 20 13.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'
+};
+
+const SECTIONS = [
+  {
+    id:'docs', num:'A-01', icon:'doc', title:'Documents & Travel Essentials',
+    items:[
+      {id:'doc1', text:'Passport valid for at least 6 months past return date'},
+      {id:'doc2', text:'Korea visa or K-ETA sorted'},
+      {id:'doc3', text:'Printed + digital copy of visa/K-ETA approval'},
+      {id:'doc4', text:'Flight ticket confirmation (digital + printed)'},
+      {id:'doc5', text:'Hotel/accommodation confirmation from Happymiles'},
+      {id:'doc6', text:'Travel insurance confirmed', hint:'Check if it is bundled in the trip package first'},
+      {id:'doc7', text:'Photocopy of passport + visa stored separately from the original'},
+      {id:'doc8', text:'Emergency contacts written down on paper', hint:'You, parents, trip coordinator, Indian Embassy Seoul'},
+      {id:'doc9', text:'Indian Embassy Seoul address + phone number saved somewhere easy to find'}
+    ],
+    tip:'Take a photo of your passport photo page and visa the night before you leave, and email it to yourself. If anything goes missing, you want that copy reachable from any device.'
+  },
+  {
+    id:'fin', num:'A-02', icon:'coin', title:'Finances',
+    items:[
+      {id:'fin1', text:'Forex/travel card ordered and loaded with KRW'},
+      {id:'fin2', text:'Backup card from a separate bank/account packed'},
+      {id:'fin3', text:'Cash carried: ₩300,000-400,000 (~₹18,000-25,000)', hint:'Exchange before leaving or at the airport'},
+      {id:'fin4', text:'Cash split between wallet and a separate bag/pocket'},
+      {id:'fin5', text:'Bank(s) informed of international travel dates'},
+      {id:'fin6', text:'Card details saved securely (password-protected note, not camera roll)'},
+      {id:'fin7', text:'Total trip budget agreed with family in advance', hint:'~₹35,000-50,000 all-in is a comfortable range'},
+      {id:'fin8', text:'Daily UPI/card limits checked and raised if needed'}
+    ],
+    tip:'Korea is extremely card-friendly -- even street food stalls often take cards or KakaoPay. Cash is mostly a backup, not the main plan.'
+  },
+  {
+    id:'tech', num:'A-03', icon:'phone', title:'Phone & Tech',
+    items:[
+      {id:'tech1', text:'eSIM purchased and installed before departure', hint:'Airalo, Holafly, or similar -- activates on arrival'},
+      {id:'tech2', text:'eSIM data checked as enough for a week of maps + photos'},
+      {id:'tech3', text:'Offline Google Maps for Seoul downloaded'},
+      {id:'tech4', text:'Papago and Naver Map apps installed'},
+      {id:'tech5', text:'Universal travel adapter packed', hint:'Korea uses Type C/F plugs, 220V -- same voltage as India, different plug shape'},
+      {id:'tech6', text:'Portable power bank charged and in carry-on'},
+      {id:'tech7', text:'Phone/camera storage cleared up'},
+      {id:'tech8', text:'Phone contacts + photos backed up to cloud'}
+    ],
+    tip:"Naver Map beats Google Maps inside Korea for transit directions -- Google Maps often can't route walking or subway there properly."
+  },
+  {
+    id:'pack', num:'A-04', icon:'umbrella', title:'Weather & Packing',
+    items:[
+      {id:'pack1', text:'4-5 breathable tops (cotton/linen, quick-dry)'},
+      {id:'pack2', text:'2 pairs light pants + 1 pair shorts or a skirt'},
+      {id:'pack3', text:'1 light layer for cold indoor AC'},
+      {id:'pack4', text:'Comfortable, already broken-in walking shoes'},
+      {id:'pack5', text:'Compact umbrella or light rain jacket packed', hint:'Non-negotiable -- mid-July is monsoon season in Seoul'},
+      {id:'pack6', text:'Sunscreen + a cap/hat'},
+      {id:'pack7', text:'Small portable fan or cooling towel'},
+      {id:'pack8', text:'One polished outfit for the Meet the Masters sessions'},
+      {id:'pack9', text:'Toiletries in travel sizes'},
+      {id:'pack10', text:'Reusable water bottle'},
+      {id:'pack11', text:'A day bag for daily excursions'}
+    ],
+    tip:'Expect ~27C, high humidity, and rain most days. Dress for sticky heat, not dry heat -- breathable fabric matters more than warmth.'
+  },
+  {
+    id:'lang', num:'A-05', icon:'speech', title:'Basic Korean',
+    items:[
+      {id:'lang1', text:'annyeonghaseyo -- Hello'},
+      {id:'lang2', text:'gamsahamnida -- Thank you'},
+      {id:'lang3', text:'joesonghamnida -- Sorry / excuse me'},
+      {id:'lang4', text:'igeo eolmayeyo? -- How much is this?'},
+      {id:'lang5', text:'hwajangsiri eodiyeyo? -- Where is the bathroom?'},
+      {id:'lang6', text:'yeongeo haseyo? -- Do you speak English?'},
+      {id:'lang7', text:'Numbers 1-10'},
+      {id:'lang8', text:'ne / aniyo -- Yes / No'}
+    ],
+    tip:'10-15 minutes a day on Duolingo for two weeks is plenty. This is a nice-to-have, not something to stress over.'
+  },
+  {
+    id:'net', num:'A-06', icon:'handshake', title:'Academic & Networking',
+    subsections:[
+      {label:'Before the trip', items:[
+        {id:'netb1', text:'Notes file created: "Seoul Trip -- Contacts & Notes"'},
+        {id:'netb2', text:'30-second self-intro prepared'},
+        {id:'netb3', text:'3-5 genuine questions written down for architects/students'}
+      ]},
+      {label:'During the trip -- Day 3 & Meet the Masters are highest value', items:[
+        {id:'netd1', text:'Get name + email/LinkedIn for every meaningful contact, not just a photo'},
+        {id:'netd2', text:'Ask Korean students about M.Arch programs and their honest opinions', hint:'Hongik, Seoul National University, KAIST are worth asking about'},
+        {id:'netd3', text:'Ask about English-taught tracks and portfolio requirements'},
+        {id:'netd4', text:"Ask visiting architects how they'd advise an international student"},
+        {id:'netd5', text:'Jot 1-2 lines in the notes file right after each real conversation'}
+      ]},
+      {label:'After the trip', items:[
+        {id:'neta1', text:'Send thank-you/follow-up messages within a week of returning'},
+        {id:'neta2', text:"Ask Happymiles about past students' Master's admits abroad"},
+        {id:'neta3', text:'File the notes somewhere findable in 3 years'}
+      ]}
+    ],
+    tip:"This trip is reconnaissance for a Master's application 3-4 years out -- not something needing visa or scholarship paperwork now. Low pressure, just gather intel and names."
+  },
+  {
+    id:'night', num:'A-07', icon:'moon', title:'Night Before Departure',
+    items:[
+      {id:'night1', text:'Passport, visa, tickets, hotel confirmation in one folder'},
+      {id:'night2', text:'Cards + cash organized and split'},
+      {id:'night3', text:'eSIM confirmed active'},
+      {id:'night4', text:'Power bank charged, adapter packed'},
+      {id:'night5', text:'Umbrella/rain layer packed in carry-on, not checked baggage'},
+      {id:'night6', text:'Message home before heading to the airport'}
+    ]
+  }
+];
+
+const NOTES = {
+  docs: {text:"Paperwork is the boring part before the good part. Get it out of the way and the rest of this gets fun, I promise.", sign:'-- your sister'},
+  fin: {text:"Don't be shy about spending a little on yourself there. That's what the budget is for.", sign:'-- your sister'},
+  pack: {text:"Pack like you're coming back with more than you left with -- because you will be, in every sense.", sign:'-- your sister'},
+  lang: {text:"You don't need to be fluent. You just need to try. People notice the trying.", sign:'-- your sister'},
+  net: {text:"Talk to everyone. Ask the questions that feel a little bold. This is exactly the kind of room you'll wish you'd spoken up in, years from now.", sign:'-- your sister'}
+};
+
+/* ---------------- Storage: shared JSON blob (works on GitHub Pages) ---------------- */
+let checkState = {};
+let recipientName = '';
+let lastSyncedAt = null;
+let syncOk = true;
+
+async function fetchRemote(){
+  const res = await fetch(BLOB_URL, {headers:{'Accept':'application/json'}});
+  if(!res.ok) throw new Error('Fetch failed: ' + res.status);
+  return await res.json();
+}
+
+async function pushRemote(){
+  const res = await fetch(BLOB_URL, {
+    method:'PUT',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body: JSON.stringify({checklist: checkState, name: recipientName})
+  });
+  if(!res.ok) throw new Error('Save failed: ' + res.status);
+}
+
+async function loadState(){
+  if(SETUP_NEEDED){ showSetupBanner(); return; }
+  try{
+    const data = await fetchRemote();
+    checkState = data.checklist || {};
+    recipientName = data.name || '';
+    document.getElementById('nameInput').value = recipientName;
+    document.getElementById('metaName').textContent = recipientName || '\u2014';
+    syncOk = true;
+  }catch(e){
+    console.error('Load failed', e);
+    syncOk = false;
+  }
+  lastSyncedAt = new Date();
+  updateSyncLabel();
+}
+
+async function saveState(){
+  if(SETUP_NEEDED) return;
+  try{ await pushRemote(); syncOk = true; }
+  catch(e){ console.error('Save failed', e); syncOk = false; }
+  lastSyncedAt = new Date();
+  updateSyncLabel();
+}
+
+function showSetupBanner(){
+  const el = document.getElementById('syncStatus');
+  if(el) el.textContent = '';
+  const btn = document.getElementById('refreshBtn');
+  if(btn) btn.style.display = 'none';
+}
+
+function updateSyncLabel(){
+  const el = document.getElementById('syncStatus');
+  if(!el || SETUP_NEEDED) return;
+  if(!syncOk){ el.textContent = "Couldn't sync -- check your connection, will retry"; return; }
+  if(!lastSyncedAt){ el.textContent = 'Shared with your brother \u00b7 syncing\u2026'; return; }
+  const secs = Math.round((new Date() - lastSyncedAt)/1000);
+  let when = 'just now';
+  if(secs >= 60) when = Math.round(secs/60) + ' min ago';
+  else if(secs >= 5) when = secs + 's ago';
+  el.textContent = `Shared with your brother \u00b7 synced ${when}`;
+}
+setInterval(updateSyncLabel, 5000);
+
+async function pollForRemoteChanges(){
+  if(SETUP_NEEDED) return;
+  try{
+    const data = await fetchRemote();
+    const remoteChecklist = data.checklist || {};
+    if(JSON.stringify(remoteChecklist) !== JSON.stringify(checkState)){
+      checkState = remoteChecklist;
+      applyStateToCheckboxes();
+      updateProgress();
+    }
+    if(typeof data.name === 'string' && data.name !== recipientName){
+      recipientName = data.name;
+      const input = document.getElementById('nameInput');
+      if(document.activeElement !== input){
+        input.value = recipientName;
+        document.getElementById('metaName').textContent = recipientName || '\u2014';
+      }
+    }
+    syncOk = true;
+  }catch(e){ syncOk = false; }
+  lastSyncedAt = new Date();
+  updateSyncLabel();
+}
+
+function applyStateToCheckboxes(){
+  document.querySelectorAll('.item input[type=checkbox]').forEach(cb=>{
+    const id = cb.id.replace('cb-','');
+    const shouldBeChecked = !!checkState[id];
+    if(cb.checked !== shouldBeChecked){
+      cb.checked = shouldBeChecked;
+      cb.closest('.item').classList.toggle('checked', shouldBeChecked);
+    }
+  });
+}
+
+let nameTimer;
+function handleNameInput(e){
+  const val = e.target.value;
+  recipientName = val;
+  document.getElementById('metaName').textContent = val.trim() ? val : '\u2014';
+  clearTimeout(nameTimer);
+  nameTimer = setTimeout(async ()=>{
+    await saveState();
+    if(syncOk){
+      const tick = document.getElementById('savedTick');
+      tick.classList.add('show');
+      setTimeout(()=>tick.classList.remove('show'), 1400);
+    }
+  }, 500);
+}
+
+/* ---------------- Render ---------------- */
+function allItemIds(){
+  let ids = [];
+  SECTIONS.forEach(s=>{
+    if(s.items) ids = ids.concat(s.items.map(i=>i.id));
+    if(s.subsections) s.subsections.forEach(sub=> ids = ids.concat(sub.items.map(i=>i.id)));
+  });
+  return ids;
+}
+
+function itemRow(item){
+  const checked = !!checkState[item.id];
+  return `<div class="item ${checked?'checked':''}" data-item="${item.id}">
+    <input type="checkbox" id="cb-${item.id}" ${checked?'checked':''}>
+    <label for="cb-${item.id}">${item.text}${item.hint?`<span class="hint">${item.hint}</span>`:''}</label>
+  </div>`;
+}
+
+function renderSections(){
+  const wrap = document.getElementById('sections');
+  wrap.innerHTML = SECTIONS.map(sec=>{
+    let bodyHtml = '<div class="section-inner">';
+    if(sec.items){
+      bodyHtml += sec.items.map(itemRow).join('');
+    }
+    if(sec.subsections){
+      sec.subsections.forEach(sub=>{
+        bodyHtml += `<div class="subhead">${sub.label}</div>`;
+        bodyHtml += sub.items.map(itemRow).join('');
+      });
+    }
+    if(NOTES[sec.id]){
+      bodyHtml += `<div class="note">${NOTES[sec.id].text}<span class="sign">${NOTES[sec.id].sign}</span></div>`;
+    }
+    if(sec.tip){
+      bodyHtml += `<div class="tip"><span class="tip-mark">TIP</span><p>${sec.tip}</p></div>`;
+    }
+    bodyHtml += '</div>';
+
+    return `<div class="section" id="sec-${sec.id}">
+      <div class="section-head" tabindex="0" role="button" aria-expanded="false">
+        <div class="section-head-left">
+          <span class="sheet-num">${sec.num}</span>
+          <svg class="section-icon" viewBox="0 0 24 24">${ICONS[sec.icon]}</svg>
+          <span class="section-title">${sec.title}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <span class="section-progress" data-sec-progress="${sec.id}">0/0</span>
+          <span class="chevron"></span>
+        </div>
+      </div>
+      <div class="section-body">${bodyHtml}</div>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.section-head').forEach(head=>{
+    const section = head.closest('.section');
+    const body = section.querySelector('.section-body');
+    const toggle = ()=>{
+      const isOpen = section.classList.toggle('open');
+      head.setAttribute('aria-expanded', isOpen);
+      body.style.maxHeight = isOpen ? body.scrollHeight + 'px' : '0px';
+    };
+    head.addEventListener('click', toggle);
+    head.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); }});
+  });
+
+  document.querySelectorAll('.item input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', onCheck);
+  });
+
+  const first = document.querySelector('.section');
+  if(first){
+    first.classList.add('open');
+    const body = first.querySelector('.section-body');
+    body.style.maxHeight = body.scrollHeight + 'px';
+  }
+}
+
+function onCheck(e){
+  const id = e.target.id.replace('cb-','');
+  checkState[id] = e.target.checked;
+  e.target.closest('.item').classList.toggle('checked', e.target.checked);
+  saveState();
+  updateProgress();
+  const openBody = document.querySelector('.section.open .section-body');
+  if(openBody) openBody.style.maxHeight = openBody.scrollHeight + 'px';
+}
+
+function updateProgress(){
+  const ids = allItemIds();
+  const totalCount = ids.length;
+  const doneCount = ids.filter(id=>checkState[id]).length;
+  const pct = totalCount ? Math.round((doneCount/totalCount)*100) : 0;
+
+  document.getElementById('progressNum').innerHTML = pct + '<sup>%</sup>';
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  SECTIONS.forEach(sec=>{
+    let secIds = [];
+    if(sec.items) secIds = secIds.concat(sec.items.map(i=>i.id));
+    if(sec.subsections) sec.subsections.forEach(sub=> secIds = secIds.concat(sub.items.map(i=>i.id)));
+    const secDone = secIds.filter(id=>checkState[id]).length;
+    const el = document.querySelector(`[data-sec-progress="${sec.id}"]`);
+    if(el) el.textContent = `${secDone}/${secIds.length}`;
+  });
+
+  updateSkyline(pct);
+}
+
+/* ---------------- Skyline ---------------- */
+const BUILDINGS = [
+  {x:20,  w:60,  h:70,  rows:5, cols:3},
+  {x:95,  w:44,  h:95,  rows:7, cols:2},
+  {x:155, w:80,  h:120, rows:9, cols:4},
+  {x:250, w:50,  h:60,  rows:4, cols:3},
+  {x:315, w:36,  h:140, rows:11,cols:2},
+  {x:365, w:70,  h:85,  rows:6, cols:4},
+  {x:450, w:44,  h:65,  rows:5, cols:2},
+  {x:505, w:90,  h:150, rows:12,cols:5},
+  {x:610, w:56,  h:78,  rows:6, cols:3},
+  {x:678, w:38,  h:100, rows:8, cols:2},
+  {x:726, w:64,  h:60,  rows:4, cols:4},
+  {x:800, w:50,  h:110, rows:9, cols:3}
+];
+
+let windowEls = [];
+
+function buildSkyline(){
+  const svg = document.getElementById('skyline');
+  const NS = 'http://www.w3.org/2000/svg';
+  windowEls = [];
+
+  BUILDINGS.forEach(b=>{
+    const rect = document.createElementNS(NS,'rect');
+    rect.setAttribute('x', b.x);
+    rect.setAttribute('y', 160 - b.h);
+    rect.setAttribute('width', b.w);
+    rect.setAttribute('height', b.h);
+    rect.setAttribute('fill', '#0A2040');
+    rect.setAttribute('stroke', 'rgba(127,179,213,0.35)');
+    rect.setAttribute('stroke-width', '1');
+    svg.appendChild(rect);
+
+    const padX = 6, padY = 8, gap = 4;
+    const cellW = (b.w - padX*2 - gap*(b.cols-1)) / b.cols;
+    const cellH = (b.h - padY*2 - gap*(b.rows-1)) / b.rows;
+
+    for(let r=0;r<b.rows;r++){
+      for(let c=0;c<b.cols;c++){
+        const win = document.createElementNS(NS,'rect');
+        const wx = b.x + padX + c*(cellW+gap);
+        const wy = (160-b.h) + padY + r*(cellH+gap);
+        win.setAttribute('x', wx);
+        win.setAttribute('y', wy);
+        win.setAttribute('width', Math.max(cellW,2));
+        win.setAttribute('height', Math.max(cellH,2));
+        win.setAttribute('fill', 'rgba(127,179,213,0.18)');
+        win.classList.add('window');
+        svg.appendChild(win);
+        windowEls.push(win);
+      }
+    }
+  });
+
+  const ground = document.createElementNS(NS,'line');
+  ground.setAttribute('x1','0'); ground.setAttribute('x2','880');
+  ground.setAttribute('y1','160'); ground.setAttribute('y2','160');
+  ground.setAttribute('stroke','var(--line)'); ground.setAttribute('stroke-width','1.5');
+  svg.appendChild(ground);
+
+  windowEls = seededShuffle(windowEls, 42);
+}
+
+function seededShuffle(arr, seed){
+  const a = arr.slice();
+  let s = seed;
+  const rand = ()=>{ s = (s*9301+49297)%233280; return s/233280; };
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(rand()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function updateSkyline(pct){
+  const litCount = Math.round((pct/100) * windowEls.length);
+  windowEls.forEach((w, i)=>{
+    if(i < litCount){
+      w.setAttribute('fill', 'var(--brass-bright)');
+      w.style.opacity = '0.95';
+    } else {
+      w.setAttribute('fill', 'rgba(127,179,213,0.18)');
+      w.style.opacity = '1';
+    }
+  });
+}
+
+/* ---------------- Countdown ---------------- */
+function updateCountdown(){
+  const target = new Date('2026-07-15T00:00:00');
+  const now = new Date();
+  const diffMs = target - now;
+  const el = document.getElementById('daysLeft');
+  if(diffMs <= 0){
+    el.textContent = 'Bon voyage!';
+    el.style.fontSize = '20px';
+  } else {
+    const days = Math.ceil(diffMs / (1000*60*60*24));
+    el.textContent = days;
+  }
+}
+
+/* ---------------- Reset ---------------- */
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('Clear all checked progress for both of you? This cannot be undone.')) return;
+  checkState = {};
+  await saveState();
+  renderSections();
+  updateProgress();
+});
+
+document.getElementById('nameInput').addEventListener('input', handleNameInput);
+
+document.getElementById('refreshBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  await pollForRemoteChanges();
+  btn.classList.remove('spinning');
+});
+
+/* ---------------- Init ---------------- */
+(async function init(){
+  buildSkyline();
+  await loadState();
+  renderSections();
+  updateProgress();
+  updateCountdown();
+  setInterval(pollForRemoteChanges, 20000);
+})();
+</script>
+</body>
+</html>
