@@ -296,10 +296,57 @@ svg.skyline{width:100%; height:auto; display:block;}
   transform:rotate(45deg);
 }
 .item label{
+  flex:1;
   font-size:14.5px; line-height:1.45; color:var(--paper); cursor:pointer;
 }
 .item.checked label{color:var(--ink-faint); text-decoration:line-through; text-decoration-color:var(--ink-faint);}
 .item .hint{display:block; font-size:12.5px; color:var(--line); margin-top:2px; font-style:italic;}
+.item-remove{
+  flex-shrink:0;
+  background:none;
+  border:none;
+  color:var(--line);
+  font-size:18px;
+  line-height:1;
+  cursor:pointer;
+  padding:0 2px;
+  opacity:0.6;
+}
+.item-remove:hover{opacity:1; color:var(--coral);}
+
+.add-item-row{
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px dashed var(--line-dim);
+}
+.add-item-input{
+  flex:1;
+  background:transparent;
+  border:1px solid var(--line-dim);
+  border-radius:var(--radius);
+  color:var(--paper);
+  font-family:'Work Sans', sans-serif;
+  font-size:13.5px;
+  padding:7px 10px;
+  outline:none;
+}
+.add-item-input::placeholder{color:var(--ink-faint);}
+.add-item-input:focus{border-color:var(--line);}
+.add-item-btn{
+  flex-shrink:0;
+  background:none;
+  border:1px solid var(--line);
+  color:var(--line);
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  padding:0 14px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  letter-spacing:0.3px;
+}
+.add-item-btn:hover{background:var(--line); color:var(--bg);}
 
 /* ---------- Tip callouts ---------- */
 .tip{
@@ -378,8 +425,14 @@ svg.skyline{width:100%; height:auto; display:block;}
   margin-bottom:10px;
   letter-spacing:0;
 }
-.reset-btn{
+.footer-btns{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
   margin-top:16px;
+}
+.reset-btn{
   background:none;
   border:1px solid var(--line-dim);
   color:var(--line);
@@ -410,7 +463,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, .section-head:focus-
       <div class="sub">6 Nights / 7 Days &nbsp;&middot;&nbsp; Bangalore &rarr; Seoul</div>
     </div>
     <div class="meta-grid">
-      <span class="label">Depart</span><span class="val">15 Jul 2026</span>
+      <span class="label">Depart</span><span class="val">29 Jul 2026</span>
       <span class="label">Scale</span><span class="val">one step : one day</span>
       <span class="label">Drawn for</span><span class="val" id="metaName">Pratyusha Gudigar</span>
       <span class="label">Drawn by</span><span class="val">your sister, from the US</span>
@@ -449,14 +502,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, .section-head:focus-
     <br><br>
     (Take it from your shy, introverted sister who ignored taking pictures when she was young, thinking they were cringe or that I looked bad. I miss those moments and have nothing to remember them by.)
     <br><br>
-    Love you. Miss you. Send me lots of picture. &#128147;
+    Love you. Miss you. Send me lots of pictures. &#128147;
     <span class="heart">&#9825;</span>
   </div>
 
   <div class="footer">
     <div class="foot-note">You've got this. Go make Seoul yours.</div>
     <div>Progress is shared between this device and your sister's &mdash; check items off as you go.</div>
-    <button class="reset-btn" id="resetBtn">Reset all progress</button>
+    <div class="footer-btns">
+      <button class="reset-btn" id="downloadBtn" type="button">Download offline copy (.md)</button>
+      <button class="reset-btn" id="resetBtn" type="button">Reset all progress</button>
+    </div>
   </div>
 
 </div>
@@ -468,7 +524,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, .section-head:focus-
    Both you and your sister, opening this same published URL,
    read and write the same node in this database -- no login
    needed while the database is in "test mode" (default 30 days
-   from creation, comfortably past your July 15 trip date).
+   from creation, comfortably past your July 29 trip date).
    ========================================================== */
 const FIREBASE_DB_URL = 'https://seoul-trip-30e9b-default-rtdb.firebaseio.com';
 const DATA_PATH = 'seoulTrip';
@@ -605,9 +661,132 @@ const NOTES = {
   net: {text:"Talk to everyone. Ask the questions that feel a little bold. This is exactly the kind of room you'll wish you'd spoken up in, years from now.", sign:'-- your sister'}
 };
 
+/* Offline copy of the full action plan, embedded so the download works with zero network. */
+const ACTION_PLAN_MD = `# Seoul Architecture Trip — Pre-Departure Action Plan
+**Trip dates:** July 29, 2026 (7 days, 6 nights) | **From:** Bangalore → Seoul
+
+*A checklist to work through over the next couple of weeks. Nothing here needs to be done all at once — tackle a section a day.*
+
+---
+
+## 1. Documents & Travel Essentials
+
+- [ ] Passport valid for at least 6 months past return date
+- [ ] Korea visa (check with university/trip organizer — Indian passport holders often need a visa or K-ETA; confirm which applies and apply early, this can take 1-2 weeks)
+- [ ] Printed + digital copy of visa/K-ETA approval
+- [ ] Flight ticket confirmation (digital + printed)
+- [ ] Hotel/accommodation confirmation from Happymiles
+- [ ] Travel insurance (confirm if it's included in the trip package — if not, get a basic one, ~7 days of coverage is cheap)
+- [ ] Photocopy of passport + visa, stored separately from the original (and a photo of both saved in her phone + emailed to herself/you)
+- [ ] Emergency contacts written down on paper (not just phone) — you, parents, trip coordinator, Indian Embassy Seoul
+- [ ] Indian Embassy Seoul address/phone number saved: keep this easy to find
+
+---
+
+## 2. Finances
+
+- [ ] Forex/travel card ordered and loaded with KRW (primary spending method — Korea is very card-friendly)
+- [ ] Backup card (separate bank/account) in case the first one gets blocked or lost
+- [ ] Cash: ₩300,000–400,000 (~₹18,000–25,000) carried in KRW, not INR — exchange before leaving or at the airport
+- [ ] Split cash: some in wallet, some in a separate bag/pocket — never all in one place
+- [ ] Inform her bank(s) of international travel dates (avoid a card freeze from "suspicious activity")
+- [ ] Save screenshots of card details (front/back) securely in case of loss — NOT a plain photo on camera roll, use a password-protected note or app
+- [ ] Total trip budget agreed with parents/you in advance (~₹35,000–50,000 all-in is a reasonable range) so she's not guessing mid-trip
+- [ ] Know the daily UPI/card limits and how to raise them if needed
+
+---
+
+## 3. Phone & Tech
+
+- [ ] eSIM purchased and installed before departure (Airalo, Holafly, or similar) — activates on arrival in Seoul, no roaming shock
+- [ ] Confirm eSIM has enough data for a week of maps, translation apps, and photos
+- [ ] Download offline Google Maps for Seoul (in case data is patchy)
+- [ ] Download **Papago** (Korean translation app — better than Google Translate for Korean) and **Naver Map** (more accurate than Google Maps in Korea)
+- [ ] Universal travel adapter (Korea uses Type C/F plugs, 220V — same voltage as India, but different plug shape)
+- [ ] Portable power bank (fully charged before flight, carry-on only — checked baggage rules restrict power banks)
+- [ ] Camera/phone storage cleared up — she'll want space for hundreds of building photos
+- [ ] Back up phone contacts/photos to cloud before leaving (just in case)
+
+---
+
+## 4. Weather & Packing (Mid-July Seoul: hot, humid, monsoon season)
+
+**Expect:** ~27°C highs, ~19°C lows, high humidity, rain likely on several days.
+
+- [ ] 4–5 breathable tops (cotton/linen, quick-dry)
+- [ ] 2 pairs light pants/trousers + 1 pair shorts or a skirt
+- [ ] 1 light layer (thin cardigan/shirt) — museums and indoor spaces run cold AC
+- [ ] Comfortable, already-broken-in walking shoes
+- [ ] Compact umbrella or light rain jacket (non-negotiable — pack this, don't rely on buying one there)
+- [ ] Sunscreen + a cap/hat
+- [ ] Small portable fan or cooling towel (humidity hits harder than the temperature suggests)
+- [ ] One slightly polished outfit for the "Meet the Masters" networking sessions
+- [ ] Basic toiletries in travel sizes (most can be bought there too, so don't overpack)
+- [ ] Reusable water bottle
+- [ ] A day bag/backpack for daily excursions (separate from the main suitcase)
+
+---
+
+## 5. Basic Korean — Duolingo / Phrase Practice
+
+She doesn't need fluency, just enough to be polite and self-sufficient. **10-15 min/day for 2 weeks before the trip is plenty.**
+
+Priority phrases to know cold (not just recognize):
+- [ ] 안녕하세요 (annyeonghaseyo) — Hello
+- [ ] 감사합니다 (gamsahamnida) — Thank you
+- [ ] 죄송합니다 (joesonghamnida) — Sorry/excuse me
+- [ ] 이거 얼마예요? (igeo eolmayeyo?) — How much is this?
+- [ ] 화장실이 어디예요? (hwajangsiri eodiyeyo?) — Where is the bathroom?
+- [ ] 영어 하세요? (yeongeo haseyo?) — Do you speak English?
+- [ ] Numbers 1–10 (useful for prices, addresses, floor numbers)
+- [ ] 네 / 아니요 (ne / aniyo) — Yes / No
+
+Duolingo's Korean course + the Papago app together cover 90% of what she'll need. This is a "nice to have," not a blocker — don't let her stress over it.
+
+---
+
+## 6. Academic & Networking Action Plan
+
+**Context to remember:** this trip is reconnaissance for a Master's application she'll actually make in her 4th/5th year — not something requiring visa/scholarship paperwork now. The goal is relationships and information, low-pressure.
+
+### Before the trip
+- [ ] Create a dedicated notes file (phone notes app or a small notebook) titled "Seoul Trip — Contacts & Notes"
+- [ ] Prepare a 30-second self-intro she's comfortable giving (who she is, what she's studying, what she's curious about) — makes networking feel less awkward in the moment
+- [ ] Write down 3–5 genuine questions she wants to ask architects/students (not generic ones — specific to what interests her: sustainability, adaptive reuse, K-culture spaces, etc.)
+
+### During the trip — Day 3 (university collaboration) & "Meet the Masters" sessions are highest value
+- [ ] Get a name + email or LinkedIn for every professor, student, or architect she talks to — a photo alone isn't enough
+- [ ] Ask Korean students directly which universities have strong M.Arch programs for international students, and their honest opinions (not just rankings) — Hongik University, Seoul National University, and KAIST are all worth asking about
+- [ ] Ask about English-taught graduate tracks, portfolio requirements, and whether they've seen Indian B.Arch grads admitted before
+- [ ] Ask any visiting architects how they'd advise an international student aiming for a career in Europe/Asia
+- [ ] After each meaningful conversation, jot 1–2 lines in her notes file immediately — memory fades fast on a packed trip
+
+### After the trip
+- [ ] Send a short thank-you/follow-up message to key contacts within a week of returning (not during the trip — let her be present first)
+- [ ] Ask the trip organizer (Happymiles) if they know of past students who got Master's admits in Korea/Europe/Australia afterward
+- [ ] File her notes somewhere she'll actually find them in 3 years (not lost in a random notes app she'll forget)
+
+---
+
+## 7. The Night Before Departure
+
+- [ ] Passport, visa, tickets, hotel confirmation all in one folder (physical + digital)
+- [ ] Cards + cash organized and split
+- [ ] eSIM confirmed active
+- [ ] Power bank charged, adapter packed
+- [ ] Umbrella/rain layer packed and NOT in checked baggage
+- [ ] Call/message you or family before heading to the airport
+
+---
+
+*You've got this, and so does she. This trip is a genuinely rare opportunity — treat it as the start of a long game, not a one-shot deal.*
+`;
+
+
 /* ---------------- Storage: shared JSON blob (works on GitHub Pages) ---------------- */
 let checkState = {};
 let recipientName = '';
+let customItems = {}; // { sectionId: [{id, text}, ...], ... } -- her own added checklist items
 let lastSyncedAt = null;
 let syncOk = true;
 
@@ -622,7 +801,7 @@ async function pushRemote(){
   const res = await fetch(DATA_URL, {
     method:'PUT',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({checklist: checkState, name: recipientName})
+    body: JSON.stringify({checklist: checkState, name: recipientName, customItems: customItems})
   });
   if(!res.ok) throw new Error('Save failed: ' + res.status);
 }
@@ -633,6 +812,7 @@ async function loadState(){
     const data = await fetchRemote();
     checkState = data.checklist || {};
     recipientName = data.name || '';
+    customItems = data.customItems || {};
     document.getElementById('nameInput').value = recipientName;
     document.getElementById('metaName').textContent = recipientName || '\u2014';
     syncOk = true;
@@ -677,11 +857,26 @@ async function pollForRemoteChanges(){
   try{
     const data = await fetchRemote();
     const remoteChecklist = data.checklist || {};
-    if(JSON.stringify(remoteChecklist) !== JSON.stringify(checkState)){
+    const remoteCustom = data.customItems || {};
+    const checklistChanged = JSON.stringify(remoteChecklist) !== JSON.stringify(checkState);
+    const customChanged = JSON.stringify(remoteCustom) !== JSON.stringify(customItems);
+
+    if(checklistChanged){
       checkState = remoteChecklist;
+    }
+    if(customChanged){
+      customItems = remoteCustom;
+    }
+    if(customChanged){
+      // Custom items add/removed elsewhere -- rebuild every section body,
+      // but refreshSectionBody() preserves each section's open/closed state.
+      SECTIONS.forEach(sec => refreshSectionBody(sec.id));
+      updateProgress();
+    } else if(checklistChanged){
       applyStateToCheckboxes();
       updateProgress();
     }
+
     if(typeof data.name === 'string' && data.name !== recipientName){
       recipientName = data.name;
       const input = document.getElementById('nameInput');
@@ -730,38 +925,117 @@ function allItemIds(){
     if(s.items) ids = ids.concat(s.items.map(i=>i.id));
     if(s.subsections) s.subsections.forEach(sub=> ids = ids.concat(sub.items.map(i=>i.id)));
   });
+  Object.values(customItems).forEach(arr=>{
+    ids = ids.concat(arr.map(i=>i.id));
+  });
   return ids;
 }
 
-function itemRow(item){
+function itemRow(item, removable){
   const checked = !!checkState[item.id];
   return `<div class="item ${checked?'checked':''}" data-item="${item.id}">
     <input type="checkbox" id="cb-${item.id}" ${checked?'checked':''}>
     <label for="cb-${item.id}">${item.text}${item.hint?`<span class="hint">${item.hint}</span>`:''}</label>
+    ${removable ? `<button type="button" class="item-remove" data-remove-id="${item.id}" aria-label="Remove item">&times;</button>` : ''}
   </div>`;
+}
+
+function buildSectionBodyHtml(sec){
+  let bodyHtml = '<div class="section-inner">';
+  if(sec.items){
+    bodyHtml += sec.items.map(i => itemRow(i, false)).join('');
+  }
+  if(sec.subsections){
+    sec.subsections.forEach(sub=>{
+      bodyHtml += `<div class="subhead">${sub.label}</div>`;
+      bodyHtml += sub.items.map(i => itemRow(i, false)).join('');
+    });
+  }
+  const custom = customItems[sec.id] || [];
+  if(custom.length){
+    bodyHtml += `<div class="subhead">Your additions</div>`;
+    bodyHtml += custom.map(i => itemRow(i, true)).join('');
+  }
+  if(NOTES[sec.id]){
+    bodyHtml += `<div class="note">${NOTES[sec.id].text}<span class="sign">${NOTES[sec.id].sign}</span></div>`;
+  }
+  if(sec.tip){
+    bodyHtml += `<div class="tip"><span class="tip-mark">TIP</span><p>${sec.tip}</p></div>`;
+  }
+  bodyHtml += `<div class="add-item-row" data-add-section="${sec.id}">
+      <input type="text" class="add-item-input" placeholder="Add your own item..." maxlength="120">
+      <button type="button" class="add-item-btn">+ Add</button>
+    </div>`;
+  bodyHtml += '</div>';
+  return bodyHtml;
+}
+
+function attachSectionInnerListeners(sectionEl){
+  sectionEl.querySelectorAll('.item input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', onCheck);
+  });
+  sectionEl.querySelectorAll('.item-remove').forEach(btn=>{
+    btn.addEventListener('click', onRemoveCustomItem);
+  });
+  const addRow = sectionEl.querySelector('.add-item-row');
+  if(addRow){
+    const input = addRow.querySelector('.add-item-input');
+    const btn = addRow.querySelector('.add-item-btn');
+    const submit = ()=>{
+      const val = input.value.trim();
+      if(!val) return;
+      addCustomItem(addRow.dataset.addSection, val);
+      input.value = '';
+      input.focus();
+    };
+    btn.addEventListener('click', submit);
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); }});
+  }
+}
+
+function refreshSectionBody(sectionId){
+  const sec = SECTIONS.find(s => s.id === sectionId);
+  const section = document.getElementById('sec-' + sectionId);
+  if(!sec || !section) return;
+  const body = section.querySelector('.section-body');
+  const wasOpen = section.classList.contains('open');
+  body.innerHTML = buildSectionBodyHtml(sec);
+  attachSectionInnerListeners(section);
+  if(wasOpen){
+    body.style.maxHeight = body.scrollHeight + 'px';
+  }
+  const secIds = sectionItemIds(sec);
+  const secDone = secIds.filter(id => checkState[id]).length;
+  const el = document.querySelector(`[data-sec-progress="${sec.id}"]`);
+  if(el) el.textContent = `${secDone}/${secIds.length}`;
+}
+
+function addCustomItem(sectionId, text){
+  const id = `custom-${sectionId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`;
+  customItems[sectionId] = customItems[sectionId] || [];
+  customItems[sectionId].push({id, text});
+  checkState[id] = false;
+  saveState();
+  updateProgress();
+  refreshSectionBody(sectionId);
+}
+
+function onRemoveCustomItem(e){
+  const id = e.currentTarget.dataset.removeId;
+  const sectionId = id.split('-')[1];
+  if(customItems[sectionId]){
+    customItems[sectionId] = customItems[sectionId].filter(ci => ci.id !== id);
+  }
+  delete checkState[id];
+  saveState();
+  updateProgress();
+  refreshSectionBody(sectionId);
 }
 
 function renderSections(){
   const wrap = document.getElementById('sections');
   wrap.innerHTML = SECTIONS.map(sec=>{
-    let bodyHtml = '<div class="section-inner">';
-    if(sec.items){
-      bodyHtml += sec.items.map(itemRow).join('');
-    }
-    if(sec.subsections){
-      sec.subsections.forEach(sub=>{
-        bodyHtml += `<div class="subhead">${sub.label}</div>`;
-        bodyHtml += sub.items.map(itemRow).join('');
-      });
-    }
-    if(NOTES[sec.id]){
-      bodyHtml += `<div class="note">${NOTES[sec.id].text}<span class="sign">${NOTES[sec.id].sign}</span></div>`;
-    }
-    if(sec.tip){
-      bodyHtml += `<div class="tip"><span class="tip-mark">TIP</span><p>${sec.tip}</p></div>`;
-    }
-    bodyHtml += '</div>';
-
+    const bodyHtml = buildSectionBodyHtml(sec);
     return `<div class="section" id="sec-${sec.id}">
       <div class="section-head" tabindex="0" role="button" aria-expanded="false">
         <div class="section-head-left">
@@ -790,8 +1064,8 @@ function renderSections(){
     head.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); }});
   });
 
-  document.querySelectorAll('.item input[type=checkbox]').forEach(cb=>{
-    cb.addEventListener('change', onCheck);
+  document.querySelectorAll('.section').forEach(section=>{
+    attachSectionInnerListeners(section);
   });
 
   const first = document.querySelector('.section');
@@ -812,6 +1086,14 @@ function onCheck(e){
   if(openBody) openBody.style.maxHeight = openBody.scrollHeight + 'px';
 }
 
+function sectionItemIds(sec){
+  let secIds = [];
+  if(sec.items) secIds = secIds.concat(sec.items.map(i=>i.id));
+  if(sec.subsections) sec.subsections.forEach(sub=> secIds = secIds.concat(sub.items.map(i=>i.id)));
+  secIds = secIds.concat((customItems[sec.id]||[]).map(i=>i.id));
+  return secIds;
+}
+
 function updateProgress(){
   const ids = allItemIds();
   const totalCount = ids.length;
@@ -822,9 +1104,7 @@ function updateProgress(){
   document.getElementById('progressFill').style.width = pct + '%';
 
   SECTIONS.forEach(sec=>{
-    let secIds = [];
-    if(sec.items) secIds = secIds.concat(sec.items.map(i=>i.id));
-    if(sec.subsections) sec.subsections.forEach(sub=> secIds = secIds.concat(sub.items.map(i=>i.id)));
+    const secIds = sectionItemIds(sec);
     const secDone = secIds.filter(id=>checkState[id]).length;
     const el = document.querySelector(`[data-sec-progress="${sec.id}"]`);
     if(el) el.textContent = `${secDone}/${secIds.length}`;
@@ -923,7 +1203,7 @@ function updateSkyline(pct){
 
 /* ---------------- Countdown ---------------- */
 function updateCountdown(){
-  const target = new Date('2026-07-15T00:00:00');
+  const target = new Date('2026-07-29T00:00:00');
   const now = new Date();
   const diffMs = target - now;
   const el = document.getElementById('daysLeft');
@@ -935,6 +1215,19 @@ function updateCountdown(){
     el.textContent = days;
   }
 }
+
+/* ---------------- Download offline copy ---------------- */
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  const blob = new Blob([ACTION_PLAN_MD], {type:'text/markdown;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Seoul_Trip_Action_Plan.md';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
 
 /* ---------------- Reset ---------------- */
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
