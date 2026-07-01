@@ -463,37 +463,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, .section-head:focus-
 
 <script>
 /* ==========================================================
-   ONE-TIME SETUP -- read this before publishing to GitHub Pages
+   STORAGE: Firebase Realtime Database
    ==========================================================
-   This page uses jsonblob.com, a free, no-signup JSON storage
-   service, so that you and your sister -- both opening the same
-   published URL -- see the SAME shared checklist progress.
-
-   Do this once, before your first `git push`:
-
-   1. Open a terminal and run:
-
-        curl -i -X POST -H "Content-Type: application/json" \
-          -d '{"checklist":{},"name":""}' \
-          https://jsonblob.com/api/jsonBlob
-
-   2. In the response, find a line that looks like:
-
-        Location: https://jsonblob.com/api/jsonBlob/a1b2c3d4-e5f6-7890-abcd-ef1234567890
-
-   3. Copy ONLY the id part after the last slash
-      (e.g. a1b2c3d4-e5f6-7890-abcd-ef1234567890)
-
-   4. Paste it into BLOB_ID below, replacing the placeholder text.
-
-   5. Save, commit, push. Publish via GitHub Pages as planned.
-
-   That's it -- from then on, this exact file (with your ID baked
-   in) is the one shared source of truth for both of you.
+   Both you and your sister, opening this same published URL,
+   read and write the same node in this database -- no login
+   needed while the database is in "test mode" (default 30 days
+   from creation, comfortably past your July 15 trip date).
    ========================================================== */
-const BLOB_ID = '019f1ba9-e371-7b79-a2f6-b40b36276d9e';
-const BLOB_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
-const SETUP_NEEDED = BLOB_ID === '019f1ba9-e371-7b79-a2f6-b40b36276d9e';
+const FIREBASE_DB_URL = 'https://seoul-trip-30e9b-default-rtdb.firebaseio.com';
+const DATA_PATH = 'seoulTrip';
+const DATA_URL = `${FIREBASE_DB_URL}/${DATA_PATH}.json`;
+const SETUP_NEEDED = !FIREBASE_DB_URL || FIREBASE_DB_URL.includes('PASTE_YOUR');
 
 /* ---------------- Data ---------------- */
 const ICONS = {
@@ -632,15 +612,16 @@ let lastSyncedAt = null;
 let syncOk = true;
 
 async function fetchRemote(){
-  const res = await fetch(BLOB_URL, {headers:{'Accept':'application/json'}});
+  const res = await fetch(DATA_URL, {headers:{'Accept':'application/json'}});
   if(!res.ok) throw new Error('Fetch failed: ' + res.status);
-  return await res.json();
+  const data = await res.json();
+  return data || {}; // Firebase returns literal JSON null when the path is empty
 }
 
 async function pushRemote(){
-  const res = await fetch(BLOB_URL, {
+  const res = await fetch(DATA_URL, {
     method:'PUT',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    headers:{'Content-Type':'application/json'},
     body: JSON.stringify({checklist: checkState, name: recipientName})
   });
   if(!res.ok) throw new Error('Save failed: ' + res.status);
@@ -673,7 +654,7 @@ async function saveState(){
 
 function showSetupBanner(){
   const el = document.getElementById('syncStatus');
-  if(el) el.textContent = 'Setup needed -- see the ONE-TIME SETUP instructions at the top of the script tag';
+  if(el) el.textContent = 'Setup needed -- set FIREBASE_DB_URL near the top of the script tag';
   const btn = document.getElementById('refreshBtn');
   if(btn) btn.style.display = 'none';
 }
